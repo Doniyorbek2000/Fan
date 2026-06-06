@@ -1,0 +1,371 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  FAN
+  CELEBRITY
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum BookingType {
+  VIDEO_MESSAGE
+  CHAT
+  VIDEO_CALL
+  LIVE_MEETUP
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BOOKING_PAYMENT
+  BOOKING_REFUND
+  SUBSCRIPTION_PAYMENT
+}
+
+enum ContentType {
+  VIDEO
+  IMAGE
+  AUDIO
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PREMIUM
+  VIP
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  phone             String?            @unique
+  passwordHash      String
+  role              UserRole           @default(FAN)
+  status            UserStatus         @default(ACTIVE)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  profile           Profile?
+  celebrity         Celebrity?
+  fan               Fan?
+  adminProfile      AdminProfile?
+  sentMessages      Message[]          @relation("SentMessages")
+  notifications     Notification[]
+  wallet            Wallet?
+  sessions          Session[]
+  passwordResets    PasswordReset[]
+
+  @@map("users")
+}
+
+model Profile {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String
+  displayName  String?
+  bio          String?
+  avatarUrl    String?
+  coverUrl     String?
+  location     String?
+  website      String?
+  socialLinks  Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("profiles")
+}
+
+model Celebrity {
+  id               String             @id @default(uuid())
+  userId           String             @unique
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         String
+  rating           Float              @default(0)
+  totalReviews     Int                @default(0)
+  isAvailable      Boolean            @default(true)
+  responseTime     String             @default("24 soat ichida")
+  totalEarnings    Float              @default(0)
+  monthlyEarnings  Float              @default(0)
+  totalBookings    Int                @default(0)
+  completedBookings Int               @default(0)
+  followerCount    Int                @default(0)
+  services         CelebrityService[]
+  bookings         Booking[]          @relation("CelebrityBookings")
+  reviews          Review[]
+  liveStreams       LiveStream[]
+  content          Content[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@map("celebrities")
+}
+
+model CelebrityService {
+  id            String      @id @default(uuid())
+  celebrityId   String
+  celebrity     Celebrity   @relation(fields: [celebrityId], references: [id], onDelete: Cascade)
+  type          BookingType
+  price         Float
+  duration      Int?
+  description   String?
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("celebrity_services")
+}
+
+model Fan {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription    SubscriptionPlan?
+  subscriptionEnd DateTime?
+  xpPoints        Int           @default(0)
+  bookings        Booking[]     @relation("FanBookings")
+  favorites       Celebrity[]   @relation("FanFavorites")
+  reviews         Review[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("fans")
+}
+
+model AdminProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("admin_profiles")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  fanId         String
+  fan           Fan           @relation("FanBookings", fields: [fanId], references: [id])
+  celebrityId   String
+  celebrity     Celebrity     @relation("CelebrityBookings", fields: [celebrityId], references: [id])
+  type          BookingType
+  status        BookingStatus @default(PENDING)
+  price         Float
+  scheduledAt   DateTime?
+  completedAt   DateTime?
+  message       String?
+  notes         String?
+  payment       Payment?
+  review        Review?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+  amount          Float
+  status          PaymentStatus @default(PENDING)
+  method          String
+  transactionId   String?       @unique
+  processedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance      Float         @default(0)
+  totalEarned  Float         @default(0)
+  totalSpent   Float         @default(0)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  walletId    String
+  wallet      Wallet          @relation(fields: [walletId], references: [id])
+  type        TransactionType
+  amount      Float
+  description String?
+  reference   String?
+  createdAt   DateTime        @default(now())
+
+  @@map("transactions")
+}
+
+model Message {
+  id           String   @id @default(uuid())
+  conversationId String
+  senderId     String
+  sender       User     @relation("SentMessages", fields: [senderId], references: [id])
+  content      String?
+  mediaUrl     String?
+  mediaType    String?
+  isPremium    Boolean  @default(false)
+  isRead       Boolean  @default(false)
+  readAt       DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model Conversation {
+  id              String   @id @default(uuid())
+  fanId           String
+  celebrityId     String
+  lastMessage     String?
+  lastMessageAt   DateTime?
+  fanUnreadCount  Int      @default(0)
+  celUnreadCount  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([fanId, celebrityId])
+  @@map("conversations")
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  bookingId   String    @unique
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  fanId       String
+  fan         Fan       @relation(fields: [fanId], references: [id])
+  celebrityId String
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id])
+  rating      Float
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("reviews")
+}
+
+model LiveStream {
+  id           String    @id @default(uuid())
+  celebrityId  String
+  celebrity    Celebrity @relation(fields: [celebrityId], references: [id])
+  title        String
+  description  String?
+  thumbnailUrl String?
+  streamKey    String    @unique @default(uuid())
+  isLive       Boolean   @default(false)
+  isPremium    Boolean   @default(false)
+  viewerCount  Int       @default(0)
+  peakViewers  Int       @default(0)
+  startedAt    DateTime?
+  endedAt      DateTime?
+  duration     Int?
+  createdAt    DateTime  @default(now())
+
+  @@map("live_streams")
+}
+
+model Content {
+  id          String      @id @default(uuid())
+  celebrityId String
+  celebrity   Celebrity   @relation(fields: [celebrityId], references: [id])
+  title       String
+  description String?
+  type        ContentType
+  url         String
+  thumbnailUrl String?
+  isPremium   Boolean     @default(false)
+  views       Int         @default(0)
+  likes       Int         @default(0)
+  isPublished Boolean     @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("content")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  device    String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otp       String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("password_resets")
+}

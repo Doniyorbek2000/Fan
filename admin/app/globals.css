@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0b1326;
+  --color-surface: #0b1326;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-surface-container-highest: #2d3449;
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #cbc3d7;
+  --color-primary: #d0bcff;
+  --color-primary-container: #a078ff;
+  --color-on-primary: #3c0091;
+  --color-secondary: #ffb0cd;
+  --color-secondary-container: #aa0266;
+  --color-tertiary: #4cd7f6;
+  --color-outline: #958ea0;
+  --color-outline-variant: #494454;
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Inter:wght@400;500;600&display=swap');
+
+html, body {
+  background: #0b1326;
+  color: #dae2fd;
+  font-family: 'Inter', sans-serif;
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, #a078ff 0%, #ffb0cd 100%);
+  box-shadow: 0 4px 20px rgba(208,188,255,0.3);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #494454; border-radius: 4px; }
