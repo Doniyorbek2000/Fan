@@ -23,6 +23,15 @@ import '../../features/analytics/analytics_screen.dart';
 import '../../features/payment/checkout_screen.dart';
 import '../../features/payment/payment_success_screen.dart';
 import '../../features/verification/verification_screen.dart';
+import '../../features/celebrity/celebrity_full_profile_screen.dart';
+import '../../features/media/media_editor_screen.dart';
+import '../../features/verification/verification_success_screen.dart';
+import '../../features/media/video_player_screen.dart';
+import '../../features/profile/profile_upload_screen.dart';
+import '../../features/profile/personal_cabinet_screen.dart';
+import '../../features/verification/verification_tracking_screen.dart';
+import '../../features/celebrity/service_pricing_screen.dart';
+import '../../features/media/upload_success_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -118,6 +127,42 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/verification',
       builder: (context, state) => const VerificationScreen(),
+    ),
+    GoRoute(
+      path: '/celebrity-full-profile',
+      builder: (context, state) => const CelebrityFullProfileScreen(),
+    ),
+    GoRoute(
+      path: '/media-editor',
+      builder: (context, state) => const MediaEditorScreen(),
+    ),
+    GoRoute(
+      path: '/verification-success',
+      builder: (context, state) => const VerificationSuccessScreen(),
+    ),
+    GoRoute(
+      path: '/video-player',
+      builder: (context, state) => const VideoPlayerScreen(),
+    ),
+    GoRoute(
+      path: '/profile-upload',
+      builder: (context, state) => const ProfileUploadScreen(),
+    ),
+    GoRoute(
+      path: '/personal-cabinet',
+      builder: (context, state) => const PersonalCabinetScreen(),
+    ),
+    GoRoute(
+      path: '/verification-tracking',
+      builder: (context, state) => const VerificationTrackingScreen(),
+    ),
+    GoRoute(
+      path: '/service-pricing',
+      builder: (context, state) => const ServicePricingScreen(),
+    ),
+    GoRoute(
+      path: '/upload-success',
+      builder: (context, state) => const UploadSuccessScreen(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
