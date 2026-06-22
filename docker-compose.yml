@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: fanmeet
+      POSTGRES_PASSWORD: fanmeet_secret
+      POSTGRES_DB: fanmeet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://fanmeet:fanmeet_secret@db:5432/fanmeet
+      JWT_SECRET: your-jwt-secret-change-in-production
+      JWT_REFRESH_SECRET: your-refresh-secret-change-in-production
+      PORT: 4000
+      NODE_ENV: development
+    depends_on:
+      - db
+
+  web:
+    build: ./
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+    depends_on:
+      - backend
+
+  admin:
+    build: ./admin
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
