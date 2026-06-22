@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Suspense } from "react";
+import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "FanMeet - Celebrity Connect",
@@ -25,6 +27,9 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-on-surface min-h-screen">
         {children}
+        <Suspense>
+          <BottomNav />
+        </Suspense>
       </body>
     </html>
   );
